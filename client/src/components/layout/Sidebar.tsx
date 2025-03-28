@@ -108,19 +108,19 @@ const Sidebar = () => {
           {menuItems.map((item) => (
             <li key={item.id}>
               <Link href={item.path}>
-                <a
+                <div
                   className={`flex items-center ${
                     isCollapsed ? 'justify-center' : ''
                   } p-2 rounded-md transition-colors ${
                     isLinkActive(item.path)
                       ? 'bg-primary/10 text-primary'
                       : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  } cursor-pointer`}
                   onClick={() => setActiveMenu(item.id)}
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
                   {!isCollapsed && <span className="ml-3">{item.label}</span>}
-                </a>
+                </div>
               </Link>
             </li>
           ))}
@@ -133,14 +133,14 @@ const Sidebar = () => {
           {bottomMenuItems.map((item) => (
             <li key={item.id}>
               <Link href={item.path}>
-                <a
+                <div
                   className={`flex items-center ${
                     isCollapsed ? 'justify-center' : ''
-                  } p-2 rounded-md transition-colors text-gray-700 hover:bg-gray-100`}
+                  } p-2 rounded-md transition-colors text-gray-700 hover:bg-gray-100 cursor-pointer`}
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
                   {!isCollapsed && <span className="ml-3">{item.label}</span>}
-                </a>
+                </div>
               </Link>
             </li>
           ))}

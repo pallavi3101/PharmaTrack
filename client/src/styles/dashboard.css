@@ -1,0 +1,128 @@
+/* Dashboard-specific styles */
+
+/* Chart containers */
+.chart-container {
+  @apply bg-white rounded-lg shadow-md p-4 h-[300px];
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+  @apply shadow-lg;
+  transform: translateY(-3px);
+}
+
+/* Alert card styles */
+.alert-card {
+  @apply bg-white rounded-lg shadow-md p-4 overflow-hidden;
+  transition: all 0.3s ease;
+}
+
+.alert-card:hover {
+  @apply shadow-lg;
+}
+
+.alert-card-header {
+  @apply text-lg font-semibold mb-2 text-gray-800 flex items-center;
+}
+
+.alert-count {
+  @apply bg-amber-100 text-amber-800 text-xs font-medium px-2 py-1 rounded-full ml-2;
+}
+
+/* Dashboard stat cards */
+.stat-card-primary {
+  @apply border-blue-500;
+}
+
+.stat-card-success {
+  @apply border-green-500;
+}
+
+.stat-card-warning {
+  @apply border-amber-500;
+}
+
+.stat-card-info {
+  @apply border-purple-500;
+}
+
+/* Animation for loading charts */
+@keyframes chartLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chart-load-animation {
+  animation: chartLoad 0.6s ease-out;
+}
+
+/* Dashboard quick action buttons */
+.quick-action-button {
+  @apply p-4 rounded-lg flex flex-col items-center justify-center h-28 w-full;
+  transition: all 0.2s ease;
+}
+
+.quick-action-button:hover {
+  transform: scale(1.03);
+}
+
+.quick-action-button:active {
+  transform: scale(0.98);
+}
+
+/* Animation for alerts */
+@keyframes alertPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(246, 192, 80, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(246, 192, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(246, 192, 80, 0);
+  }
+}
+
+.alert-pulse {
+  animation: alertPulse 2s infinite;
+}
+
+/* System status indicators */
+.status-indicator {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-online {
+  @apply bg-green-500;
+}
+
+.status-syncing {
+  @apply bg-amber-500;
+}
+
+.status-offline {
+  @apply bg-red-500;
+}
+
+/* Dashboard responsive grid */
+.dashboard-grid {
+  @apply grid gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .stat-value {
+    @apply text-xl;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+}

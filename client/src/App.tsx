@@ -9,6 +9,7 @@ import Customers from "@/pages/Customers";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Help from "@/pages/Help";
+import AskAI from "@/pages/AskAI";
 
 // Import styles
 import "./index.css";
@@ -25,6 +26,7 @@ function App() {
         <Route path="/counter-sales" component={CounterSales} />
         <Route path="/customers" component={Customers} />
         <Route path="/reports" component={Reports} />
+        <Route path="/ask-ai" component={AskAI} />
         <Route path="/settings" component={Settings} />
         <Route path="/help" component={Help} />
         <Route component={NotFound} />

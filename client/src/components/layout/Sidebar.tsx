@@ -3,7 +3,7 @@ import { useLocation, Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Package, ShoppingCart, Users, 
-  BarChart3, Settings, HelpCircle, LogOut
+  BarChart3, Settings, HelpCircle, LogOut, Sparkles
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -46,6 +46,12 @@ const Sidebar = () => {
       label: 'Reports',
       icon: <BarChart3 size={20} />,
       path: '/reports'
+    },
+    {
+      id: 'ask-ai',
+      label: 'Ask PharmAI',
+      icon: <Sparkles size={20} />,
+      path: '/ask-ai'
     }
   ];
 

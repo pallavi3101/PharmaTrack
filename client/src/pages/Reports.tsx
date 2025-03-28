@@ -107,12 +107,78 @@ const Reports = () => {
                     </button>
                   </div>
                 </div>
-                <div className="h-32 bg-white p-4 border-t">
-                  {/* Placeholder for chart preview */}
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <span>Chart preview will appear here</span>
+                {report.id === 'sales' && (
+                  <div className="h-32 bg-white p-4 border-t">
+                    {/* Sales Chart Preview */}
+                    <div className="w-full h-full flex items-center">
+                      <div className="flex-1 h-full flex items-end space-x-2">
+                        <div className="bg-blue-500 w-1/12 h-[30%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[40%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[35%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[60%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[50%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[70%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[65%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[90%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[85%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[75%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[60%] rounded-t"></div>
+                        <div className="bg-blue-500 w-1/12 h-[80%] rounded-t"></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+                
+                {report.id === 'purchase' && (
+                  <div className="h-32 bg-white p-4 border-t">
+                    {/* Purchase Chart Preview */}
+                    <div className="w-full h-full flex items-center">
+                      <div className="flex-1 h-full flex items-end space-x-2">
+                        <div className="bg-green-500 w-1/12 h-[65%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[45%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[55%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[40%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[60%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[50%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[55%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[70%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[65%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[55%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[70%] rounded-t"></div>
+                        <div className="bg-green-500 w-1/12 h-[60%] rounded-t"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {report.id === 'profit' && (
+                  <div className="h-32 bg-white p-4 border-t">
+                    {/* Profit Chart Preview */}
+                    <div className="w-full h-full">
+                      <div className="flex h-full items-center justify-center">
+                        <div className="relative h-24 w-24 rounded-full">
+                          <div className="absolute inset-0 rounded-full border-8 border-purple-500" style={{ 
+                            clipPath: 'polygon(50% 50%, 0% 0%, 100% 0%, 100% 100%, 75% 100%, 50% 75%, 25% 100%, 0% 100%)'
+                          }}></div>
+                          <div className="absolute inset-0 rounded-full border-8 border-purple-200"></div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-sm font-bold text-purple-500">65%</div>
+                          </div>
+                        </div>
+                        <div className="ml-4 text-xs space-y-1">
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-purple-500 rounded-sm mr-1"></div>
+                            <span>Gross Profit</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-purple-200 rounded-sm mr-1"></div>
+                            <span>Expenses</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>

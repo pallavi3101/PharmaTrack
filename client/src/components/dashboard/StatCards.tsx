@@ -50,7 +50,7 @@ const StatCard = ({
           <span>{change} since last month</span>
         </div>
         <Link href={link}>
-          <a className="text-sm text-primary hover:underline">{linkText}</a>
+          <span className="text-sm text-primary hover:underline cursor-pointer">{linkText}</span>
         </Link>
       </div>
     </motion.div>

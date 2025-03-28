@@ -1,0 +1,86 @@
+Current Issues:
+The Inventory, Counter & Sales, and Customers modules open, but functionalities like adding, uploading, and filtering are not working.
+
+Sales counters are too large, taking up unnecessary space. Reduce the size and display 4 counters per row instead of 8 in a single row.
+
+Below the counters, implement the Counter Sale Module with the following features:
+
+Counter Sale Module Overview:
+The Counter Sale Module in the Pharmacy Management System is designed for quick and efficient customer sales management. It enables pharmacists to handle multiple sales with an intuitive interface.
+
+Key Functionalities & Enhancements:
+1. Multi-Counter Management:
+Display multiple counters in a grid format (4 per row) with minimal size.
+
+Each counter should show:
+
+Counter Number (e.g., Counter 1, Counter 2)
+
+Customer Details (if active)
+
+Status: Active / Closed
+
+Allow adding new counters dynamically as needed.
+
+💡 Example Dummy Data for Counters:
+
+Counter No	Customer Name	Status
+Counter 1	Rahul Sharma	Active
+Counter 2	Empty	Closed
+Counter 3	Priya Mehta	Active
+Counter 4	Empty	Closed
+2. Customer & Medicine Entry:
+When a counter is selected, a new screen should open:
+
+Customer Details at the top
+
+Medicine Entry Below
+
+Medicine name should have autofill suggestions based on inventory.
+
+Automatically retrieve batch details, expiry dates, price, and company name when selecting a medicine.
+
+Prevent adding expired or out-of-stock medicines.
+
+💡 Example Dummy Data for Medicines:
+
+Medicine Name	Batch No	Expiry Date	Price	Company
+Paracetamol	B12345	12/2026	₹25	Cipla
+Cough Syrup	B98765	08/2025	₹120	Sun Pharma
+Amoxicillin	B56789	06/2027	₹75	Pfizer
+3. Billing & Payment Processing:
+Show a receipt summary with:
+
+Gross Amount
+
+Discounts
+
+Taxes
+
+Net Payable Amount
+
+Allow multiple payment options:
+
+Cash
+
+Online Payments (UPI, Card, Net Banking)
+
+Auto-calculate balance after entering the amount received.
+
+💡 Example Dummy Data for Billing:
+
+Item	Qty	Price	Discount	Tax	Total
+Paracetamol	2	₹25	5%	12%	₹53
+Cough Syrup	1	₹120	10%	5%	₹115
+Final Amount:					₹168
+4. Transaction Actions:
+Save Transaction & Close Counter
+
+Generate Printable Receipt
+
+Cancel Transaction without Saving
+
+5. Receipt & Transaction Overview:
+Show confirmation modal before printing receipts with detailed billing information.
+
+Overview modal to display all session receipts for quick access.

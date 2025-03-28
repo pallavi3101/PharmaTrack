@@ -40,14 +40,14 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
           {!showMobileSearch && (
             <div className="flex items-center">
               <Link href="/dashboard">
-                <a className="flex items-center">
+                <div className="flex items-center cursor-pointer">
                   <div className="bg-primary w-8 h-8 rounded flex items-center justify-center mr-2">
                     <i className="fas fa-pills text-white"></i>
                   </div>
                   <span className="text-lg font-bold text-gray-900 hidden md:inline-block">
                     PharmaTrack
                   </span>
-                </a>
+                </div>
               </Link>
             </div>
           )}

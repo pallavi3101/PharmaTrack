@@ -1,0 +1,262 @@
+/**
+ * PharmaTrack - Dashboard JavaScript
+ * Contains functionality specific to the dashboard
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize sales chart
+    initializeSalesChart();
+
+    // Initialize inventory status chart
+    initializeInventoryChart();
+
+    // Initialize expiry alerts
+    loadExpiryAlerts();
+
+    // Initialize low stock alerts
+    loadLowStockAlerts();
+});
+
+// Initialize sales chart using monthlySalesData from Flask
+function initializeSalesChart() {
+    const salesChartCanvas = document.getElementById('salesChart');
+    if (!salesChartCanvas) return;
+
+    const ctx = salesChartCanvas.getContext('2d');
+
+    /**
+     * monthlySalesData is injected from Flask as a global variable in the template.
+     * It should look like:
+     *   [
+     *     { "month": 1, "total_amount": 5000 },
+     *     { "month": 2, "total_amount": 12000 },
+     *     ...
+     *   ]
+     *
+     * Additionally, a global variable `predictedSales` can be injected with the predicted
+     * sales amount for the next month.
+     */
+    // Convert monthlySalesData to labels/data
+    const salesLabels = monthlySalesData.map(item => 'Month ' + item.month);
+    const salesValues = monthlySalesData.map(item => item.total_amount);
+
+    // If predictedSales exists, append it to the chart data as "Next"
+    if (typeof predictedSales !== 'undefined') {
+        salesLabels.push('Next');
+        salesValues.push(predictedSales);
+    }
+
+    const salesData = {
+        labels: salesLabels,
+        datasets: [{
+            label: 'Monthly Sales',
+            data: salesValues,
+            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+            borderColor: 'rgba(39, 174, 96, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(39, 174, 96, 1)',
+            pointBorderColor: '#fff',
+            pointRadius: 5,
+            tension: 0.1
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: salesData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value) {
+                            return '₹' + Number(value).toLocaleString('en-IN');
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return 'Sales: ₹' + Number(context.raw).toLocaleString('en-IN');
+                        }
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
+
+// Initialize inventory status chart using inventoryStatusData from Flask
+function initializeInventoryChart() {
+    const inventoryChartCanvas = document.getElementById('inventoryChart');
+    if (!inventoryChartCanvas) return;
+
+    const ctx = inventoryChartCanvas.getContext('2d');
+
+    /**
+     * inventoryStatusData is injected from Flask as a global variable in the template.
+     * It should look like:
+     *   {
+     *     "in_stock": 85,
+     *     "low_stock": 12,
+     *     "out_of_stock": 3
+     *   }
+     */
+    const dataValues = [
+        inventoryStatusData.in_stock || 0,
+        inventoryStatusData.low_stock || 0,
+        inventoryStatusData.out_of_stock || 0
+    ];
+
+    const inventoryData = {
+        labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+        datasets: [{
+            data: dataValues,
+            backgroundColor: [
+                'rgba(39, 174, 96, 0.7)',   // In Stock
+                'rgba(243, 156, 18, 0.7)', // Low Stock
+                'rgba(231, 76, 60, 0.7)'   // Out of Stock
+            ],
+            borderColor: [
+                'rgba(39, 174, 96, 1)',
+                'rgba(243, 156, 18, 1)',
+                'rgba(231, 76, 60, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: inventoryData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Load expiry alerts
+function loadExpiryAlerts() {
+    const expiryAlertsContainer = document.getElementById('expiryAlerts');
+    if (!expiryAlertsContainer) return;
+
+    // Fetch real data from the server
+    fetch('/api/expiry_alerts')
+        .then(response => response.json())
+        .then(items => {
+            if (!items || items.length === 0) {
+                expiryAlertsContainer.innerHTML = `
+                    <div class="alert alert-light text-center">
+                        <i class="fas fa-check-circle text-success mb-2" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0">No expiry alerts at this time.</p>
+                    </div>
+                `;
+            } else {
+                // Build a small list or table
+                let html = `
+                    <div class="alert alert-warning">
+                        <strong>Expiring Items:</strong>
+                    </div>
+                    <ul class="list-group">
+                `;
+                items.forEach(item => {
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${item.name} (Exp: ${item.expiry_date})</span>
+                            <span class="badge bg-danger">Qty: ${item.quantity}</span>
+                        </li>
+                    `;
+                });
+                html += `</ul>`;
+                expiryAlertsContainer.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching expiry alerts:', error);
+            expiryAlertsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    Failed to load expiry alerts. Please try again.
+                </div>
+            `;
+        });
+}
+
+// Load low stock alerts
+function loadLowStockAlerts() {
+    const lowStockAlertsContainer = document.getElementById('lowStockAlerts');
+    if (!lowStockAlertsContainer) return;
+
+    // Fetch real data from the server
+    fetch('/api/low_stock')
+        .then(response => response.json())
+        .then(items => {
+            if (!items || items.length === 0) {
+                lowStockAlertsContainer.innerHTML = `
+                    <div class="alert alert-light text-center">
+                        <i class="fas fa-check-circle text-success mb-2" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0">No low stock alerts at this time.</p>
+                    </div>
+                `;
+            } else {
+                // Build a small list or table
+                let html = `
+                    <div class="alert alert-warning">
+                        <strong>Low Stock Items:</strong>
+                    </div>
+                    <ul class="list-group">
+                `;
+                items.forEach(item => {
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${item.name} (Stock: ${item.quantity})</span>
+                            <span class="badge bg-warning">${item.quantity} left</span>
+                        </li>
+                    `;
+                });
+                html += `</ul>`;
+                lowStockAlertsContainer.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching low stock alerts:', error);
+            lowStockAlertsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    Failed to load low stock alerts. Please try again.
+                </div>
+            `;
+        });
+}
+
+// Quick actions
+function quickAction(action) {
+    switch (action) {
+        case 'add-inventory':
+            window.location.href = '/inventory';
+            break;
+        case 'add-customer':
+            window.location.href = '/customers';
+            break;
+        case 'new-sale':
+            window.location.href = '/counters'; // or '/sales' if you have that route
+            break;
+        case 'reports':
+            window.location.href = '/reports';
+            break;
+        default:
+            break;
+    }
+}

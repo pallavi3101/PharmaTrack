@@ -1,0 +1,277 @@
+Some changes you need to do is first of all remove the extra modules which you've added like the Payments, Preseciption, Appointments one
+
+then in the Inventory Module Don't keep the dropdown in that include the following given features only
+1. Overview:
+Manage all medicines/products received from suppliers.
+
+Add products manually or via Excel/CSV upload.
+
+Filter and search products easily.
+
+Display products in a paginated tabular format.
+
+2. UI & Navigation:
+Search Field: Search by product name or ID.
+
+Filter Options: Daily, weekly, monthly product entries.
+
+Buttons:
+
+Add Product Manually – Open a form for manual entry.
+
+Upload Excel/CSV – Upload product data in bulk.
+
+No Products Case: Show "No Products Added" with action buttons.
+
+3. Product Addition & Upload:
+Manual Entry: Enter product details via a form with validation.
+
+Bulk Upload: Drag-and-drop area for Excel/CSV upload.
+
+Duplicate Handling: Prevent duplicate entries by comparing with existing products.
+
+4. Product Table Display:
+Columns: Name, Batch Number, Quantity, Price, Expiry Date, Supplier.
+
+Pagination: 10 products per page with page navigation buttons.
+
+Sorting & Filtering directly in the table.
+
+5. Product Search & Filters:
+Search: Real-time search by name or ID.
+
+Filter by Date: View daily, weekly, or monthly added products.
+
+6. Product Details & Editing:
+Clicking a product opens a modal with full details (Supplier, Purchase Date, Total Stock Value, Expiry Status).
+
+Edit option for updating product details.
+
+Then Next is Sales & Order first change this module name from Sales & Order to Counter & Sales and remove the dropdown options from this as well in this it will have following things only
+
+1. Overview:
+Fast and user-friendly customer sales processing with minimal clicks.
+
+Supports managing multiple sales counters simultaneously.
+
+2. UI & Navigation:
+Dashboard View: Displays 8 counters by default. Each counter shows:
+
+Counter Number
+
+Customer Name (if session is active)
+
+Status (Active/Closed)
+
+Add Counter Button: Allows creating new counters as needed.
+
+Grid Layout: Adjusts dynamically based on screen size (2-4 columns).
+
+3. Counter Details & Medicine Entry:
+Customer Details Section:
+
+Patient Name (Required)
+
+Phone Number, Area, Doctor Name (Optional, with autofill for doctors)
+
+Medicine Entry Section:
+
+Auto-suggest medicines based on available stock.
+
+Auto-populate Batch Number, Expiry Date, Price, Company details.
+
+Validations:
+Prevent adding expired or out-of-stock medicines.
+Ensure quantity does not exceed available stock.
+Auto-update total amount based on quantity and discount.
+
+Actions:
+
+Edit or delete medicines from the list.
+
+Search medicines by name.
+
+4. Receipt Breakup & Payment Processing:
+Receipt Summary:
+
+Gross Amount, Discounts, Taxes, Net Payable Amount.
+
+Payment Options:
+
+Cash: Manual entry of received amount.
+
+Online Payment: UPI, Card, Net Banking (Dropdown).
+
+Real-Time Updates:
+
+Automatically calculate Net Amount and Balance Amount.
+
+5. Actions & Confirmation Modal:
+Bottom Screen Buttons:
+Save: Save transaction & close counter.
+Print: Save & generate receipt.
+Cancel: Close counter without saving.
+
+Print Confirmation Modal:
+
+Displays customer & purchase details, taxes, discount.
+
+Includes a formatted receipt preview for printing.
+
+Footer: “Goods once sold will not be taken back.”
+
+6. Receipt Overview & Pagination:
+View All Receipts Modal:
+
+Lists all generated receipts within the session.
+
+Shows Customer Name, Doctor Name, Date, Net Amount.
+
+Supports pagination (10 receipts per page). 
+
+Then in the Customer Module it will have this functionality:
+1. Dual Tabs for Better Customer Management
+✅ ‘All Customers’ – Displays all registered customers.
+✅ ‘Regular Customers’ – Lists customers with recurring medicine refills or ongoing courses.
+
+1. ‘All Customers’ Tab
+Table Columns:
+
+Name – Customer name
+
+Phone – Contact number
+
+Email – Email address
+
+Address – Full address
+
+Actions (Edit, Reset, Delete)
+
+Search & Filter Options:
+✅ Search by name, phone, or email.
+✅ ‘Reset’ button to clear search filters.
+
+Sorting & Dynamic Updates:
+✅ Data should be sorted by name (default) and other attributes.
+✅ Table updates dynamically when customers are added, edited, or deleted.
+
+2. ‘Regular Customers’ Tab
+Filtered List of Regular Customers:
+✅ Displays only customers with recurring medicine refills or ongoing courses.
+
+Table Columns:
+
+Name – Customer name
+
+Phone – Contact number
+
+Course Period – Duration of medicine course (fetched from sales records)
+
+Medicine List – Medicines included in the refill
+
+Status (Color-coded refill status):
+✅ Green: Scheduled (Refill available)
+⚠️ Orange: Upcoming (Refill due in 3 days)
+❌ Red: Overdue (Refill pending)
+
+Actions:
+✅ Send Reminder – Notify pharmacist to prepare the refill.
+
+3. ‘Send Reminder’ Behavior
+✅ Check Medicine Availability Before Sending Reminder:
+
+If all medicines are available:
+
+Show success message confirming the refill is available.
+
+If some medicines are out of stock:
+
+Display a warning with unavailable medicines and remaining stock levels.
+
+then reports module:
+The Reports tab in the navigation opens a dashboard displaying three key reports:
+
+Sales Report
+
+Purchase Report
+
+Profit Report
+
+Each report box includes:
+
+Title (e.g., Sales Report)
+
+Short description
+
+Graph preview for quick insights
+
+Clicking a box leads to a detailed report page with graphs, insights, and export options.
+
+1. Sales Report
+Insights & Graphs
+Daily Sales Trends – Total revenue & units sold per day (Line Graph/Bar Chart)
+
+Sales Growth Comparison – Compare two periods (month-over-month/year-over-year) (Line Graph/Bar Chart)
+
+Best & Worst Sales Days – Highlight peaks & slumps in sales
+
+Export Options
+Excel/CSV File Name: Sales_Report_<Date>.xlsx/csv
+
+Sections Included:
+
+Header – Report title, date range, generated date
+
+Data – Sales revenue, units sold, period-over-period comparison
+
+Graphs – Sales trends
+
+Summary – Total revenue, total units sold, average daily revenue
+
+Excel Format: Multi-sheet data, bold headings, conditional formatting
+
+2. Purchase Report
+Insights & Graphs
+Total Purchase Value – Track spending trends (Line Graph/Bar Chart)
+
+Purchase by Supplier – Breakdown by total value & quantity (Pie Chart/Bar Graph)
+
+Purchase by Product Category – Category-wise purchases (Stacked Bar Chart/Pie Chart)
+
+Export Options
+Excel/CSV File Name: Purchase_Report_<Date>.xlsx/csv
+
+Sections Included:
+
+Header – Report title, date range, generated date
+
+Data – Purchase trends, supplier & category breakdowns
+
+Graphs – Supplier breakdown, category contributions
+
+Summary – Total purchase value, top supplier, most purchased category
+
+Excel Format: Multi-sheet data, bold headings, conditional formatting
+
+3. Profit Report
+Insights & Graphs
+Profit by Product Category – Revenue, COGS & profit margins (Pie Chart/Bar Graph)
+
+Profit by Product – Individual product profits & margins (Bar Graph/Table)
+
+Profit Margin Over Time – Track trends (Line Graph/Area Chart)
+
+Export Options
+Excel/CSV File Name: Profit_Report_<Date>.xlsx/csv
+
+Sections Included:
+
+Header – Report title, date range, generated date
+
+Data – Category-wise & product-wise profits, trends
+
+Graphs – Profit margins & best-selling products
+
+Summary – Total revenue, profit, average profit margin
+
+Excel Format: Multi-sheet data, bold headings, conditional formatting

@@ -15,7 +15,7 @@ const ExpiryAlerts = () => {
 
   useEffect(() => {
     // Simulating API call to fetch expiry items
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       const mockItems: ExpiryItem[] = [
         {
           name: 'Amoxicillin 500mg',
@@ -47,6 +47,8 @@ const ExpiryAlerts = () => {
       setExpiryItems(mockItems);
       setLoading(false);
     }, 800);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   const getExpiryStatus = (expiryDateStr: string) => {

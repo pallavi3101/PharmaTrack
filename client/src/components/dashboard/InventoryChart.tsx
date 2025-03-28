@@ -32,7 +32,7 @@ const InventoryChart = ({ inventoryStatusData }: InventoryChartProps) => {
     ];
     
     setChartData(formattedData);
-  }, [inventoryStatusData]);
+  }, []);
 
   const totalItems = chartData.reduce((sum, item) => sum + item.value, 0);
 

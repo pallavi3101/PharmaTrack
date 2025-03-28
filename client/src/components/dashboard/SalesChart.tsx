@@ -56,7 +56,7 @@ const SalesChart = ({ monthlySalesData = [], predictedSales }: SalesChartProps) 
       // Calculate actual metrics from provided data
       // ... (similar calculations using real data)
     }
-  }, [monthlySalesData]);
+  }, []);
 
   const getMonthName = (month: number): string => {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

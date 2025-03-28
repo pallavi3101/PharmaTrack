@@ -14,7 +14,7 @@ const LowStockAlerts = () => {
 
   useEffect(() => {
     // Simulating API call to fetch low stock items
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       const mockItems: LowStockItem[] = [
         {
           name: 'Metformin 500mg',
@@ -46,6 +46,8 @@ const LowStockAlerts = () => {
       setLowStockItems(mockItems);
       setLoading(false);
     }, 1000);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   const getStockLevel = (quantity: number, threshold: number) => {

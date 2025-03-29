@@ -241,11 +241,110 @@ const CounterSales = () => {
   };
 
   const handleCompleteTransaction = () => {
+    // Generate and print receipt
+    if (cart.length > 0) {
+      printReceipt();
+    }
+    
     // Close the receipt modal
     setShowReceiptModal(false);
     
     // Close the counter and reset
     handleCloseCounter();
+  };
+  
+  const printReceipt = () => {
+    // Create receipt content
+    const receiptContent = `
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 20px; }
+            .receipt { width: 300px; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .logo { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+            .info { margin-bottom: 5px; }
+            .customer { margin-bottom: 15px; }
+            .items { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            .items th, .items td { text-align: left; padding: 5px 0; }
+            .items th { border-bottom: 1px solid #ddd; }
+            .right { text-align: right; }
+            .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+          </style>
+        </head>
+        <body>
+          <div class="receipt">
+            <div class="header">
+              <div class="logo">PharmaTrack</div>
+              <div class="info">123 Medical Street, City</div>
+              <div class="info">Phone: 123-456-7890</div>
+              <div class="info">Receipt #${Math.floor(Math.random() * 100000)}</div>
+              <div class="info">Date: ${new Date().toLocaleDateString()}</div>
+            </div>
+            
+            <div class="customer">
+              <div><strong>Customer:</strong> ${customerName || 'Walk-in Customer'}</div>
+              <div><strong>Phone:</strong> ${phoneNumber || 'N/A'}</div>
+            </div>
+            
+            <table class="items">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th class="right">Price</th>
+                  <th class="right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cart.map(item => `
+                  <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td class="right">₹${item.price.toFixed(2)}</td>
+                    <td class="right">₹${item.total.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+                
+                <tr>
+                  <td colspan="3" class="right total">Total:</td>
+                  <td class="right total">₹${calculateTotal().toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="right">Amount Paid:</td>
+                  <td class="right">₹${amountPaid}</td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="right">Change:</td>
+                  <td class="right">₹${((parseFloat(amountPaid) || 0) - calculateTotal()).toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              <p>Thank you for your purchase!</p>
+              <p>For any inquiries about your medicines, please contact us.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(receiptContent);
+      printWindow.document.close();
+      // Wait for content to load before printing
+      printWindow.onload = function() {
+        printWindow.print();
+        printWindow.onafterprint = function() {
+          printWindow.close();
+        };
+      };
+    }
   };
 
   return (

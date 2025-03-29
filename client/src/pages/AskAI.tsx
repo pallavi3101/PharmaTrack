@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Bot, Search, RefreshCw, Sparkles, User, Pill, Package } from 'lucide-react';
 import Header from '@/components/layout/Header';
@@ -7,51 +7,113 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { queryAI, analyzeMedicineData, analyzeCustomerData } from '@/utils/aiUtils';
 
-// Sample responses for demo purposes
-const dummyResponses = {
-  medicine: [
-    {
-      question: "What are the side effects of Paracetamol?",
-      answer: "Paracetamol (acetaminophen) is generally well-tolerated but can cause the following side effects:\n\n- Nausea\n- Stomach pain\n- Headache\n- Skin rash (rare)\n- Liver damage (when taken in excessive amounts)\n\nIf you experience severe side effects or allergic reactions like skin rashes, swelling, or difficulty breathing, seek medical attention immediately.",
-      source: "Pharmacy Reference Guide, 2024"
-    },
-    {
-      question: "Can I take Amoxicillin with food?",
-      answer: "Yes, Amoxicillin can be taken with or without food. Taking it with food may help reduce stomach upset. However, for optimal absorption, it's best to take it at consistent times each day as prescribed. Complete the full course of antibiotics even if you feel better to ensure the infection is completely treated.",
-      source: "International Pharmaceutical Reference"
-    },
-    {
-      question: "Is Vitamin C effective for colds?",
-      answer: "Research on Vitamin C for common colds shows mixed results. While Vitamin C supplements don't appear to reduce the risk of getting a cold for most people, they may help reduce the duration and severity of cold symptoms. Regular supplementation might be more effective than taking it after cold symptoms start. The recommended daily allowance for adults is 65-90mg per day.",
-      source: "Journal of Clinical Nutrition, 2023"
-    }
-  ],
-  suppliers: [
-    {
-      question: "Who supplies Cipla products?",
-      answer: "Cipla products are supplied directly through Cipla's authorized distribution network. In your region, the primary distributors are:\n\n1. MedSupply Distribution Ltd.\n2. HealthCare Logistics Inc.\n3. Regional Medical Suppliers\n\nFor ordering Cipla products, you can contact their customer service at 1-800-CIPLA-CS or place orders through their B2B portal at business.cipla.com.",
-      source: "Supplier Database, 2024"
-    },
-    {
-      question: "What are the delivery terms for Sun Pharma?",
-      answer: "Sun Pharma's standard delivery terms include:\n\n- Orders over $1000: Free delivery, 2-3 business days\n- Orders under $1000: $25 delivery fee, 2-3 business days\n- Express delivery: Additional $50, next business day\n- Minimum order value: $250\n- Payment terms: Net 30 days for established customers\n- Returns: Within 14 days with original packaging\n\nThese terms may vary based on your specific contract or region.",
-      source: "Sun Pharma Distribution Guide"
-    }
-  ],
-  inventory: [
-    {
-      question: "Best practices for inventory management?",
-      answer: "Best practices for pharmaceutical inventory management include:\n\n1. Implement FEFO (First Expired, First Out) system\n2. Regular cycle counting (weekly/monthly depending on volume)\n3. Set par levels and reorder points for all items\n4. Use barcode/RFID systems for tracking\n5. Monitor expiry dates with automated alerts\n6. Perform regular stock reconciliation\n7. Maintain proper storage conditions monitoring\n8. Document all stock movements with detailed audit trails\n9. Analyze turnover rates to optimize ordering\n10. Segregate expired/damaged items immediately",
-      source: "Pharmaceutical Inventory Management Guidelines"
-    },
-    {
-      question: "How to optimize stock levels?",
-      answer: "To optimize pharmaceutical stock levels:\n\n1. Analyze historical sales data (minimum 6 months)\n2. Calculate safety stock based on lead times and demand variability\n3. Implement ABC analysis (categorize items by value/criticality)\n4. Set different service levels for different categories\n5. Consider seasonality for products with fluctuating demand\n6. Establish PAR levels (Periodic Automatic Replenishment)\n7. Implement JIT (Just-In-Time) for high-turnover items\n8. Review and adjust stock levels quarterly\n9. Use forecasting software for demand prediction\n10. Collaborate with suppliers on VMI (Vendor Managed Inventory) for key products",
-      source: "Healthcare Supply Chain Association"
-    }
-  ]
-};
+// Sample medicine data for AI analysis
+const sampleMedicines = [
+  {
+    id: 1,
+    name: "Paracetamol 500mg",
+    category: "Analgesics",
+    company: "GlaxoSmithKline",
+    batchNo: "PCM22001",
+    expiryDate: "2025-06-30",
+    price: 5.99,
+    stock: 120,
+    threshold: 20
+  },
+  {
+    id: 2,
+    name: "Amoxicillin 250mg",
+    category: "Antibiotics",
+    company: "Cipla",
+    batchNo: "AMX22045",
+    expiryDate: "2024-11-15",
+    price: 12.50,
+    stock: 45,
+    threshold: 15
+  },
+  {
+    id: 3,
+    name: "Lisinopril 10mg",
+    category: "Antihypertensives",
+    company: "Sun Pharma",
+    batchNo: "LIS22078",
+    expiryDate: "2025-03-22",
+    price: 15.75,
+    stock: 60,
+    threshold: 20
+  },
+  {
+    id: 4,
+    name: "Metformin 500mg",
+    category: "Antidiabetics",
+    company: "Zydus",
+    batchNo: "MET22103",
+    expiryDate: "2025-08-10",
+    price: 8.25,
+    stock: 75,
+    threshold: 25
+  },
+  {
+    id: 5,
+    name: "Atorvastatin 20mg",
+    category: "Statins",
+    company: "Pfizer",
+    batchNo: "ATV22022",
+    expiryDate: "2025-01-18",
+    price: 18.99,
+    stock: 30,
+    threshold: 10
+  }
+];
+
+// Sample customer data for AI analysis
+const sampleCustomers = [
+  {
+    id: 1,
+    name: "John Smith",
+    phone: "123-456-7890",
+    email: "john.smith@example.com",
+    address: "123 Main St",
+    loyalty_points: 150,
+    registration_date: "2023-01-15"
+  },
+  {
+    id: 2,
+    name: "Sarah Johnson",
+    phone: "987-654-3210",
+    email: "sarah.j@example.com",
+    address: "456 Oak Ave",
+    loyalty_points: 350,
+    registration_date: "2022-07-22"
+  }
+];
+
+// Sample sales data for AI analysis
+const sampleSales = [
+  {
+    id: 1,
+    customer_id: 1,
+    date: "2024-02-15",
+    total: 45.99,
+    items: [
+      { product_id: 1, quantity: 2, price: 5.99 },
+      { product_id: 3, quantity: 1, price: 15.75 }
+    ]
+  },
+  {
+    id: 2,
+    customer_id: 2,
+    date: "2024-02-20",
+    total: 27.49,
+    items: [
+      { product_id: 2, quantity: 1, price: 12.50 },
+      { product_id: 4, quantity: 1, price: 8.25 }
+    ]
+  }
+];
 
 // Sample recent queries for display
 const recentQueries = [
@@ -68,6 +130,45 @@ const AskAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('medicine');
   const [conversations, setConversations] = useState<any[]>([]);
+  const [previousQueries, setPreviousQueries] = useState<string[]>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Load previous conversations from localStorage if available
+  useEffect(() => {
+    const savedConversations = localStorage.getItem('pharmaai_conversations');
+    const savedQueries = localStorage.getItem('pharmaai_queries');
+    
+    if (savedConversations) {
+      try {
+        setConversations(JSON.parse(savedConversations));
+      } catch (e) {
+        console.error("Error parsing saved conversations:", e);
+      }
+    }
+    
+    if (savedQueries) {
+      try {
+        setPreviousQueries(JSON.parse(savedQueries));
+      } catch (e) {
+        console.error("Error parsing saved queries:", e);
+      }
+    }
+  }, []);
+
+  // Save conversations to localStorage when they change
+  useEffect(() => {
+    if (conversations.length > 0) {
+      localStorage.setItem('pharmaai_conversations', JSON.stringify(conversations));
+    }
+  }, [conversations]);
+
+  // Save queries to localStorage when they change
+  useEffect(() => {
+    if (previousQueries.length > 0) {
+      localStorage.setItem('pharmaai_queries', JSON.stringify(previousQueries));
+    }
+  }, [previousQueries]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -85,35 +186,78 @@ const AskAI = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     
-    // Simulate AI processing
-    setIsLoading(true);
+    // Add user query to the conversation
+    setConversations(prev => [
+      ...prev,
+      {
+        type: 'user',
+        message: query
+      }
+    ]);
     
-    setTimeout(() => {
-      // Get a dummy response based on active tab
-      const responsePool = dummyResponses[activeTab as keyof typeof dummyResponses] || [];
-      const randomResponse = responsePool[Math.floor(Math.random() * responsePool.length)];
+    // Save query to previous queries
+    setPreviousQueries(prev => {
+      const newQueries = [query, ...prev.filter(q => q !== query)].slice(0, 10);
+      return newQueries;
+    });
+    
+    setIsLoading(true);
+    setApiError(null);
+    
+    try {
+      let response;
+      let source = "PharmaTrack AI, " + new Date().toLocaleDateString();
       
-      // Add to conversation
-      setConversations([
-        ...conversations,
-        {
-          type: 'user',
-          message: query
-        },
+      // Use different AI functions based on the active tab
+      if (activeTab === 'medicine') {
+        response = await analyzeMedicineData(sampleMedicines, query);
+      } else if (activeTab === 'suppliers') {
+        response = await queryAI({ 
+          question: query,
+          systemPrompt: "You are a pharmaceutical supplier relations expert. Answer questions about suppliers, delivery terms, payment schedules, and product availability based on the data in the PharmaTrack system."
+        });
+      } else if (activeTab === 'inventory') {
+        response = await analyzeCustomerData(sampleCustomers, sampleSales, query);
+      } else {
+        response = await queryAI({ question: query });
+      }
+      
+      // Add AI response to the conversation
+      setConversations(prev => [
+        ...prev,
         {
           type: 'ai',
-          message: randomResponse.answer,
-          source: randomResponse.source
+          message: response,
+          source: source
         }
       ]);
+    } catch (error) {
+      console.error("Error querying AI:", error);
+      setApiError("Failed to get response from AI. Please try again.");
       
+      toast({
+        title: "Connection Error",
+        description: "Could not connect to the AI service. Please try again later.",
+        variant: "destructive",
+      });
+      
+      // Add error message to conversation
+      setConversations(prev => [
+        ...prev,
+        {
+          type: 'ai',
+          message: "I'm sorry, I couldn't process your request at this time. Please try again later.",
+          source: "System"
+        }
+      ]);
+    } finally {
       setQuery('');
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleQuickQuery = (question: string) => {
@@ -254,7 +398,7 @@ const AskAI = () => {
                 
                 <div className="p-4">
                   <div className="space-y-2">
-                    {recentQueries.map((q, index) => (
+                    {(previousQueries.length > 0 ? previousQueries : recentQueries).map((q, index) => (
                       <div 
                         key={index}
                         className="flex items-center text-sm text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-50 rounded-md"

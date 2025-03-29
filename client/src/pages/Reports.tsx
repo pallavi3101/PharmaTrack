@@ -159,19 +159,18 @@ const Reports = () => {
   const handleExportReport = (reportType: string, format: 'excel' | 'csv') => {
     setIsGeneratingReport(true);
     
-    // Simulate processing delay
-    setTimeout(() => {
+    try {
       let data: any[] = [];
-      let columns: { key: string, header: string }[] = [];
+      let columns: { key: keyof any, header: string }[] = [];
       let filename = '';
       
       // Configure export based on report type
       if (reportType === 'sales') {
         data = dailySalesData;
         columns = [
-          { key: 'date', header: 'Date' },
-          { key: 'revenue', header: 'Revenue (INR)' },
-          { key: 'units', header: 'Units Sold' }
+          { key: 'date' as keyof typeof dailySalesData[0], header: 'Date' },
+          { key: 'revenue' as keyof typeof dailySalesData[0], header: 'Revenue (INR)' },
+          { key: 'units' as keyof typeof dailySalesData[0], header: 'Units Sold' }
         ];
         filename = 'PharmaTrack_Sales_Report';
       } else if (reportType === 'purchase') {
@@ -187,13 +186,18 @@ const Reports = () => {
       } else if (reportType === 'profit') {
         data = profitByProductCategoryData;
         columns = [
-          { key: 'name', header: 'Category' },
-          { key: 'revenue', header: 'Revenue (INR)' },
-          { key: 'cogs', header: 'Cost of Goods (INR)' },
-          { key: 'profit', header: 'Profit (INR)' },
-          { key: 'margin', header: 'Margin (%)' }
+          { key: 'name' as keyof typeof profitByProductCategoryData[0], header: 'Category' },
+          { key: 'revenue' as keyof typeof profitByProductCategoryData[0], header: 'Revenue (INR)' },
+          { key: 'cogs' as keyof typeof profitByProductCategoryData[0], header: 'Cost of Goods (INR)' },
+          { key: 'profit' as keyof typeof profitByProductCategoryData[0], header: 'Profit (INR)' },
+          { key: 'margin' as keyof typeof profitByProductCategoryData[0], header: 'Margin (%)' }
         ];
         filename = 'PharmaTrack_Profit_Report';
+      }
+      
+      // Add the date range to the filename if available
+      if (startDate && endDate) {
+        filename += `_${startDate}_to_${endDate}`;
       }
       
       // Export the data in the selected format
@@ -203,13 +207,20 @@ const Reports = () => {
         exportToCSV(data, columns, filename);
       }
       
-      setIsGeneratingReport(false);
-      
       toast({
         title: "Report Generated",
         description: `Your ${reportType} report has been downloaded in ${format.toUpperCase()} format.`,
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: "Error Generating Report",
+        description: "There was a problem generating your report. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingReport(false);
+    }
   };
 
   const handlePrintReport = () => {

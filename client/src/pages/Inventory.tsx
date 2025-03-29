@@ -680,7 +680,74 @@ const Inventory = () => {
                     </DialogContent>
                   </Dialog>
                   
-                  <Button variant="outline" className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    onClick={() => {
+                      // Create a hidden file input element
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.csv,.xls,.xlsx';
+                      
+                      input.onchange = (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (!file) return;
+                        
+                        // Define mapping between CSV header names and our data structure
+                        const headerMap: Record<string, string> = {
+                          'Product Name': 'name',
+                          'Category': 'category',
+                          'Batch No': 'batchNumber',
+                          'Expiry Date': 'expiryDate',
+                          'Stock': 'quantity',
+                          'Reorder Level': 'threshold',
+                          'Price': 'price',
+                          'Manufacturer': 'manufacturer'
+                        };
+                        
+                        // Import the file
+                        importFromFile(
+                          file,
+                          headerMap as any,
+                          async (importedData) => {
+                            // Process each imported product
+                            for (const product of importedData) {
+                              try {
+                                // Add to database
+                                await apiRequest('/api/products', {
+                                  method: 'POST',
+                                  body: JSON.stringify(product),
+                                });
+                              } catch (error) {
+                                console.error('Error adding imported product:', error);
+                              }
+                            }
+                            
+                            // Refresh product list
+                            const products = await apiRequest('/api/products');
+                            if (products) {
+                              setRealInventoryItems(products);
+                            }
+                            
+                            toast({
+                              title: 'Import Complete',
+                              description: `Successfully imported ${importedData.length} products`,
+                            });
+                          },
+                          (error) => {
+                            toast({
+                              title: 'Import Failed',
+                              description: error,
+                              variant: 'destructive',
+                            });
+                          }
+                        );
+                      };
+                      
+                      // Trigger the file selection dialog
+                      input.click();
+                    }}
+                  >
                     <Upload className="h-4 w-4 mr-1" />
                     <span>Import</span>
                   </Button>

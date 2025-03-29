@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Search, Plus, Filter, ArrowUpDown, Download, Upload,
-  Package, AlertTriangle, RefreshCw, MoreVertical
+  Package, AlertTriangle, RefreshCw, MoreVertical, X
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -10,6 +10,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +46,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from '@/lib/queryClient';
+import { importFromFile, exportToExcel, exportToCSV } from '@/utils/fileUtils';
 
 // Dummy inventory data
 const inventoryItems = [
@@ -129,6 +163,23 @@ const categories = [
   'Vitamins',
 ];
 
+// Form schema for adding a new product
+const productFormSchema = z.object({
+  name: z.string().min(2, "Product name must be at least 2 characters"),
+  description: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
+  price: z.coerce.number().positive("Price must be a positive number"),
+  costPrice: z.coerce.number().positive("Cost price must be a positive number").optional(),
+  quantity: z.coerce.number().min(0, "Quantity cannot be negative"),
+  threshold: z.coerce.number().min(1, "Threshold must be at least 1"),
+  expiryDate: z.string().optional(),
+  batchNumber: z.string().min(2, "Batch number is required"),
+  manufacturer: z.string().min(2, "Manufacturer is required"),
+});
+
+// Type for the product form
+type ProductFormValues = z.infer<typeof productFormSchema>;
+
 const Inventory = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,6 +187,89 @@ const Inventory = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [realInventoryItems, setRealInventoryItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  
+  // Form for adding a new product
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      category: "",
+      price: 0,
+      costPrice: 0,
+      quantity: 0,
+      threshold: 10,
+      expiryDate: "",
+      batchNumber: "",
+      manufacturer: "",
+    },
+  });
+  
+  // Load products from the API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        const products = await apiRequest('/api/products');
+        if (products) {
+          setRealInventoryItems(products);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load products. Using cached data.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [toast]);
+  
+  // Handle form submission
+  const onSubmit = async (data: ProductFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const response = await apiRequest('/api/products', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      
+      if (response) {
+        toast({
+          title: "Success",
+          description: "Product added successfully",
+        });
+        
+        // Reset form and close dialog
+        form.reset();
+        setIsAddProductOpen(false);
+        
+        // Refresh product list
+        const updatedProducts = await apiRequest('/api/products');
+        if (updatedProducts) {
+          setRealInventoryItems(updatedProducts);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -153,19 +287,35 @@ const Inventory = () => {
     }
   };
 
+  // Determine which data source to use (real data or mock data)
+  const displayItems = realInventoryItems.length > 0 ? realInventoryItems : inventoryItems;
+  
   // Filter items based on search query, category and status
-  const filteredItems = inventoryItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.manufacturer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.batchNo.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredItems = displayItems.filter((item: any) => {
+    const matchesSearch = 
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.batchNo || item.batchNumber)?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     
+    let itemStatus = item.status;
+    // If no explicit status, determine based on quantity vs threshold
+    if (!itemStatus && item.quantity !== undefined && item.threshold !== undefined) {
+      if (item.quantity === 0) {
+        itemStatus = 'out-of-stock';
+      } else if (item.quantity <= item.threshold) {
+        itemStatus = 'low-stock';
+      } else {
+        itemStatus = 'in-stock';
+      }
+    }
+    
     const matchesStatus = 
       filterStatus === 'all' || 
-      (filterStatus === 'low-stock' && item.status === 'low-stock') ||
-      (filterStatus === 'out-of-stock' && item.status === 'out-of-stock') ||
-      (filterStatus === 'in-stock' && item.status === 'in-stock');
+      (filterStatus === 'low-stock' && itemStatus === 'low-stock') ||
+      (filterStatus === 'out-of-stock' && itemStatus === 'out-of-stock') ||
+      (filterStatus === 'in-stock' && itemStatus === 'in-stock');
     
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -333,15 +483,228 @@ const Inventory = () => {
                   <span className="text-sm text-gray-500">Showing {sortedItems.length} of {inventoryItems.length} items</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex items-center">
-                    <Plus className="h-4 w-4 mr-1" />
-                    <span>Add Product</span>
-                  </Button>
+                  <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="flex items-center">
+                        <Plus className="h-4 w-4 mr-1" />
+                        <span>Add Product</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Add New Product</DialogTitle>
+                        <DialogDescription>
+                          Enter the details of the new product to add it to your inventory.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Product Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g. Paracetamol 500mg" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Description</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Brief description of the product" 
+                                      className="resize-none h-20"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="category"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Category</FormLabel>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select category" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {categories.filter(c => c !== 'All').map(category => (
+                                        <SelectItem key={category} value={category}>
+                                          {category}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="manufacturer"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Manufacturer</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g. Sun Pharma" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Selling Price</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" step="0.01" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="costPrice"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cost Price</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" step="0.01" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="quantity"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Quantity</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="threshold"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Reorder Threshold</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="1" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="batchNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Batch Number</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g. B12345" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="expiryDate"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Expiry Date</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="date" 
+                                      {...field}
+                                      min={new Date().toISOString().split('T')[0]} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <DialogFooter>
+                            <Button type="submit" disabled={isSubmitting}>
+                              {isSubmitting ? (
+                                <>
+                                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                  Adding Product...
+                                </>
+                              ) : (
+                                'Add Product'
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                  
                   <Button variant="outline" className="flex items-center">
                     <Upload className="h-4 w-4 mr-1" />
                     <span>Import</span>
                   </Button>
-                  <Button variant="outline" className="flex items-center">
+                  <Button variant="outline" className="flex items-center"
+                    onClick={() => {
+                      // Export current filtered items
+                      const columns = [
+                        { key: 'name' as keyof typeof sortedItems[0], header: 'Product Name' },
+                        { key: 'category' as keyof typeof sortedItems[0], header: 'Category' },
+                        { key: 'batchNo' as keyof typeof sortedItems[0], header: 'Batch No' },
+                        { key: 'expiryDate' as keyof typeof sortedItems[0], header: 'Expiry Date' },
+                        { key: 'stock' as keyof typeof sortedItems[0], header: 'Stock' },
+                        { key: 'reorderLevel' as keyof typeof sortedItems[0], header: 'Reorder Level' },
+                        { key: 'price' as keyof typeof sortedItems[0], header: 'Price' },
+                        { key: 'manufacturer' as keyof typeof sortedItems[0], header: 'Manufacturer' }
+                      ];
+                      exportToExcel(sortedItems, columns, 'PharmaTrack_Inventory');
+                      
+                      toast({
+                        title: 'Export Complete',
+                        description: 'Inventory has been exported to Excel',
+                      });
+                    }}
+                  >
                     <Download className="h-4 w-4 mr-1" />
                     <span>Export</span>
                   </Button>

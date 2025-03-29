@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { 
   BarChart3, LineChart, PieChart, Download, TrendingUp, 
   DollarSign, Calendar, FileText, ArrowUpRight, 
-  ChevronDown, BarChart, Printer, Activity 
+  ChevronDown, BarChart, Printer, Activity, RefreshCw
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
